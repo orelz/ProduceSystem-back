@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const { get } = require("express/lib/response");
+const req = require("express/lib/request");
 
 //Uses
 const app = express();
@@ -17,10 +18,11 @@ mongoose.connect("mongodb://localhost:27017/produceSite");
 const produceSchema = {
   produceName: String,
   produceCategory: String,
-  activeOrHide: Boolean,
+  activeProduce: Boolean,
+  importentProduce: Boolean,
+  produceInArchive: Boolean,
   authorName: String,
   produceCreateDate: Date,
-  produceUpdateDate: Date,
   produceContent: String,
 };
 
@@ -34,10 +36,11 @@ app.post("/createProduce", (req, res) => {
   const produce = new Produce({
     produceName: req.body.produceName,
     produceCategory: req.body.produceCategory,
-    activeOrHide: req.body.activeOrHide,
+    activeProduce: req.body.activeOrHide,
+    importentProduce: req.body.importentProduce,
+    produceInArchive: false,
     authorName: req.body.authorName,
     produceCreateDate: new Date(),
-    produceUpdateDate: new Date(),
     produceContent: req.body.produceContent,
   });
 
@@ -46,6 +49,56 @@ app.post("/createProduce", (req, res) => {
       res.send("Produce saved");
     } else {
       res.send("Error" + err);
+    }
+  });
+});
+
+//Get profuces - Tables
+// A. Get all the regular produces.
+app.get("/regularProduces", (req, res) => {
+  Produce.find(
+    { importentProduce: false, activeProduce: false, produceInArchive: false },
+    (err, foundProduce) => {
+      if (foundProduce) {
+        res.send(foundProduce);
+      } else {
+        res.send("Error " + err);
+      }
+    }
+  );
+});
+
+// B. Get the importent produces.
+
+app.get("/importentProduces", (req, res) => {
+  Produce.find(
+    { importentProduce: true, activeProduce: false, produceInArchive: false },
+    (err, foundProduce) => {
+      if (foundProduce) {
+        res.send(foundProduce);
+      } else {
+        res.send("Error " + err);
+      }
+    }
+  );
+});
+// C. Get the hide produces.
+app.get("/hideProduces", (req, res) => {
+  Produce.find({ activeProduce: true }, (err, foundProduce) => {
+    if (foundProduce) {
+      res.send(foundProduce);
+    } else {
+      res.send("Error " + err);
+    }
+  });
+});
+// D. Get the archive produces.
+app.get("/archiveProduces", (req, res) => {
+  Produce.find({ produceInArchive: true }, (err, foundProduce) => {
+    if (foundProduce) {
+      res.send(foundProduce);
+    } else {
+      res.send("Error " + err);
     }
   });
 });
@@ -81,14 +134,13 @@ app
     );
   })
   .delete((req, res) => {
-      Produce.deleteOne({produceName:req.params.produceName},
-        (err)=> {
-            if(!err){
-                res.send("Produce deleted")
-            } else {
-                res.send("Delete produce fail "+err)
-            }
-        })
+    Produce.deleteOne({ produceName: req.params.produceName }, (err) => {
+      if (!err) {
+        res.send("Produce deleted");
+      } else {
+        res.send("Delete produce fail " + err);
+      }
+    });
   });
 
 app.listen(3000, () => {
