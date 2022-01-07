@@ -36,7 +36,7 @@ app.post("/createProduce", (req, res) => {
   const produce = new Produce({
     produceName: req.body.produceName,
     produceCategory: req.body.produceCategory,
-    activeProduce: req.body.activeOrHide,
+    activeProduce: req.body.activeProduce,
     importentProduce: req.body.importentProduce,
     produceInArchive: false,
     authorName: req.body.authorName,
@@ -57,7 +57,7 @@ app.post("/createProduce", (req, res) => {
 // A. Get all the regular produces.
 app.get("/regularProduces", (req, res) => {
   Produce.find(
-    { importentProduce: false, activeProduce: false, produceInArchive: false },
+    { importentProduce: false, activeProduce: true, produceInArchive: false },
     (err, foundProduce) => {
       if (foundProduce) {
         res.send(foundProduce);
@@ -72,7 +72,7 @@ app.get("/regularProduces", (req, res) => {
 
 app.get("/importentProduces", (req, res) => {
   Produce.find(
-    { importentProduce: true, activeProduce: false, produceInArchive: false },
+    { importentProduce: true, activeProduce: true, produceInArchive: false },
     (err, foundProduce) => {
       if (foundProduce) {
         res.send(foundProduce);
@@ -84,7 +84,7 @@ app.get("/importentProduces", (req, res) => {
 });
 // C. Get the hide produces.
 app.get("/hideProduces", (req, res) => {
-  Produce.find({ activeProduce: true }, (err, foundProduce) => {
+  Produce.find({ activeProduce: false }, (err, foundProduce) => {
     if (foundProduce) {
       res.send(foundProduce);
     } else {
@@ -102,6 +102,20 @@ app.get("/archiveProduces", (req, res) => {
     }
   });
 });
+// E. Get all produces (not in use).
+app.get("/allProduces", (req, res) => {
+  Produce.find(
+    {},
+    (err, foundProduce) => {
+      if (foundProduce) {
+        res.send(foundProduce);
+      } else {
+        res.send("Error " + err);
+      }
+    }
+  );
+});
+
 
 //Actions on specific produce
 app
