@@ -1,11 +1,12 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const { get } = require("express/lib/response");
-const req = require("express/lib/request");
+const cors = require("cors")
+
 
 //Uses
 const app = express();
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //DB connection
@@ -18,9 +19,8 @@ mongoose.connect("mongodb://localhost:27017/produceSite");
 const produceSchema = {
   produceName: String,
   produceCategory: String,
-  activeProduce: Boolean,
+  produceStatus: String,
   importentProduce: Boolean,
-  produceInArchive: Boolean,
   authorName: String,
   produceCreateDate: Date,
   produceContent: String,
@@ -32,13 +32,12 @@ app.get("/", (req, res) => {
   res.send("Work");
 });
 
-app.post("/createProduce", (req, res) => {
+app.post("/createProduce", express.json({type: '*/*'}), (req, res) => {
   const produce = new Produce({
     produceName: req.body.produceName,
     produceCategory: req.body.produceCategory,
-    activeProduce: req.body.activeProduce,
+    produceStatus: req.body.produceStatus,
     importentProduce: req.body.importentProduce,
-    produceInArchive: false,
     authorName: req.body.authorName,
     produceCreateDate: new Date(),
     produceContent: req.body.produceContent,
@@ -46,7 +45,7 @@ app.post("/createProduce", (req, res) => {
 
   produce.save((err) => {
     if (!err) {
-      res.send("Produce saved");
+      res.json("Produce saved");
     } else {
       res.send("Error" + err);
     }
@@ -57,7 +56,7 @@ app.post("/createProduce", (req, res) => {
 // A. Get all the regular produces.
 app.get("/regularProduces", (req, res) => {
   Produce.find(
-    { importentProduce: false, activeProduce: true, produceInArchive: false },
+    { importentProduce: false, produceStatus: "active"},
     (err, foundProduce) => {
       if (foundProduce) {
         res.send(foundProduce);
@@ -73,7 +72,7 @@ app.get("/regularProduces", (req, res) => {
 
 app.get("/importentProduces", (req, res) => {
   Produce.find(
-    { importentProduce: true, activeProduce: true, produceInArchive: false },
+    { importentProduce: true, produceStatus: "active"},
     (err, foundProduce) => {
       if (foundProduce) {
         res.send(foundProduce);
@@ -85,7 +84,7 @@ app.get("/importentProduces", (req, res) => {
 });
 // C. Get the hide produces.
 app.get("/hideProduces", (req, res) => {
-  Produce.find({ activeProduce: false }, (err, foundProduce) => {
+  Produce.find({ produceStatus: "hide" }, (err, foundProduce) => {
     if (foundProduce) {
       res.send(foundProduce);
     } else {
@@ -95,7 +94,7 @@ app.get("/hideProduces", (req, res) => {
 });
 // D. Get the archive produces.
 app.get("/archiveProduces", (req, res) => {
-  Produce.find({ produceInArchive: true }, (err, foundProduce) => {
+  Produce.find({ produceStatus: "archive" }, (err, foundProduce) => {
     if (foundProduce) {
       res.send(foundProduce);
     } else {
@@ -141,7 +140,8 @@ app
       (err, foundProduce) => {
         if (foundProduce) {
           console.log(foundProduce);
-          res.send("Update produce Success");
+          // res.send("Update produce Success");
+          res.json("Update produce Success: " + res.body); //Need to check this fix later
         } else {
           res.send("Update fail " + err);
         }
