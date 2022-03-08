@@ -20,7 +20,7 @@ const produceSchema = {
   produceName: String,
   produceCategory: String,
   produceStatus: String,
-  importentProduce: Boolean,
+  importantProduce: Boolean,
   authorName: String,
   produceCreateDate: Date,
   produceContent: String,
@@ -37,7 +37,7 @@ app.post("/createProduce", express.json({type: '*/*'}), (req, res) => {
     produceName: req.body.produceName,
     produceCategory: req.body.produceCategory,
     produceStatus: req.body.produceStatus,
-    importentProduce: req.body.importentProduce,
+    importantProduce: req.body.importantProduce,
     authorName: req.body.authorName,
     produceCreateDate: new Date(),
     produceContent: req.body.produceContent,
@@ -56,7 +56,7 @@ app.post("/createProduce", express.json({type: '*/*'}), (req, res) => {
 // A. Get all the regular produces.
 app.get("/regularProduces", (req, res) => {
   Produce.find(
-    { importentProduce: false, produceStatus: "active"},
+    { importantProduce: false, produceStatus: "active"},
     (err, foundProduce) => {
       if (foundProduce) {
         res.send(foundProduce);
@@ -70,9 +70,9 @@ app.get("/regularProduces", (req, res) => {
 
 // B. Get the importent produces.
 
-app.get("/importentProduces", (req, res) => {
+app.get("/importantProduces", (req, res) => {
   Produce.find(
-    { importentProduce: true, produceStatus: "active"},
+    { importantProduce: true, produceStatus: "active"},
     (err, foundProduce) => {
       if (foundProduce) {
         res.send(foundProduce);
