@@ -133,7 +133,7 @@ app
       }
     );
   })
-  .patch((req, res) => {
+  .patch(express.json({type: '*/*'}), (req, res) => {
     Produce.updateOne(
       { produceName: req.params.produceName },
       { $set: req.body },
@@ -141,7 +141,7 @@ app
         if (foundProduce) {
           console.log(foundProduce);
           // res.send("Update produce Success");
-          res.json("Update produce Success: " + res.body); //Need to check this fix later
+          res.json("Update produce Success: " + req.body); //Need to check this fix later
         } else {
           res.send("Update fail " + err);
         }
