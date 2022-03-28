@@ -33,23 +33,39 @@ app.get("/", (req, res) => {
 });
 
 app.post("/createProduce", express.json({type: '*/*'}), (req, res) => {
-  const produce = new Produce({
-    produceName: req.body.produceName,
-    produceCategory: req.body.produceCategory,
-    produceStatus: req.body.produceStatus,
-    importantProduce: req.body.importantProduce,
-    authorName: req.body.authorName,
-    produceCreateDate: new Date(),
-    produceContent: req.body.produceContent,
-  });
+  Produce.find(
+    { importantProduce: true},
+    (err, foundProduce) => {
 
-  produce.save((err) => {
-    if (!err) {
-      res.json("Produce saved");
-    } else {
-      res.send("Error" + err);
+      if (foundProduce.length>=5) {
+
+        res.send("Error- Cant save more then five important produces. " + err);  
+
+      } else {
+
+        const produce = new Produce({
+          produceName: req.body.produceName,
+          produceCategory: req.body.produceCategory,
+          produceStatus: req.body.produceStatus,
+          importantProduce: req.body.importantProduce,
+          authorName: req.body.authorName,
+          produceCreateDate: new Date(),
+          produceContent: req.body.produceContent,
+        });
+        produce.save((err) => {
+          if (!err) {
+            res.json("Produce saved");
+          } else {
+            res.send("Error" + err);
+          }
+        });
+
+        
+      }
     }
-  });
+  );
+
+
 });
 
 //Get profuces - Tables
