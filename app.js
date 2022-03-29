@@ -1,8 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const cors = require("cors")
-
+const cors = require("cors");
 
 //Uses
 const app = express();
@@ -17,13 +16,21 @@ mongoose.connect("mongodb://localhost:27017/produceSite");
 
 //Produce Schema
 const produceSchema = {
-  produceName: String,
-  produceCategory: String,
-  produceStatus: String,
-  importantProduce: Boolean,
-  authorName: String,
+  produceName: { type: String, required: true },
+  produceCategory: {
+    type: String,
+    enum: ["medical", "manager"],
+    required: true,
+  },
+  produceStatus: {
+    type: String,
+    enum: ["active", "hide", "archive"],
+    required: true,
+  },
+  importantProduce: { type: Boolean, required: true },
+  authorName: { type: String, required: true },
   produceCreateDate: Date,
-  produceContent: String,
+  produceContent: { type: String, required: true },
 };
 
 const Produce = new mongoose.model("Produce", produceSchema);
@@ -32,47 +39,36 @@ app.get("/", (req, res) => {
   res.send("Work");
 });
 
-app.post("/createProduce", express.json({type: '*/*'}), (req, res) => {
-  Produce.find(
-    { importantProduce: true},
-    (err, foundProduce) => {
-
-      if (foundProduce.length>=5) {
-
-        res.send("Error- Cant save more then five important produces. " + err);  
-
-      } else {
-
-        const produce = new Produce({
-          produceName: req.body.produceName,
-          produceCategory: req.body.produceCategory,
-          produceStatus: req.body.produceStatus,
-          importantProduce: req.body.importantProduce,
-          authorName: req.body.authorName,
-          produceCreateDate: new Date(),
-          produceContent: req.body.produceContent,
-        });
-        produce.save((err) => {
-          if (!err) {
-            res.json("Produce saved");
-          } else {
-            res.send("Error" + err);
-          }
-        });
-
-        
-      }
+app.post("/createProduce", express.json({ type: "*/*" }), (req, res) => {
+  Produce.find({ importantProduce: true }, (err, foundProduce) => {
+    if (foundProduce.length >= 5) {
+      res.send("Error- Cant save more then five important produces. " + err);
+    } else {
+      const produce = new Produce({
+        produceName: req.body.produceName,
+        produceCategory: req.body.produceCategory,
+        produceStatus: req.body.produceStatus,
+        importantProduce: req.body.importantProduce,
+        authorName: req.body.authorName,
+        produceCreateDate: new Date(),
+        produceContent: req.body.produceContent,
+      });
+      produce.save((err) => {
+        if (!err) {
+          res.json("Produce saved");
+        } else {
+          res.send("Error" + err);
+        }
+      });
     }
-  );
-
-
+  });
 });
 
 //Get profuces - Tables
 // A. Get all the regular produces.
 app.get("/regularProduces", (req, res) => {
   Produce.find(
-    { importantProduce: false, produceStatus: "active"},
+    { importantProduce: false, produceStatus: "active" },
     (err, foundProduce) => {
       if (foundProduce) {
         res.send(foundProduce);
@@ -83,12 +79,11 @@ app.get("/regularProduces", (req, res) => {
   );
 });
 
-
 // B. Get the importent produces.
 
 app.get("/importantProduces", (req, res) => {
   Produce.find(
-    { importantProduce: true, produceStatus: "active"},
+    { importantProduce: true, produceStatus: "active" },
     (err, foundProduce) => {
       if (foundProduce) {
         res.send(foundProduce);
@@ -120,18 +115,14 @@ app.get("/archiveProduces", (req, res) => {
 });
 // E. Get all produces (not in use).
 app.get("/allProduces", (req, res) => {
-  Produce.find(
-    {},
-    (err, foundProduce) => {
-      if (foundProduce) {
-        res.send(foundProduce);
-      } else {
-        res.send("Error " + err);
-      }
+  Produce.find({}, (err, foundProduce) => {
+    if (foundProduce) {
+      res.send(foundProduce);
+    } else {
+      res.send("Error " + err);
     }
-  );
+  });
 });
-
 
 //Actions on specific produce
 app
@@ -149,7 +140,7 @@ app
       }
     );
   })
-  .patch(express.json({type: '*/*'}), (req, res) => {
+  .patch(express.json({ type: "*/*" }), (req, res) => {
     Produce.updateOne(
       { produceName: req.params.produceName },
       { $set: req.body },
